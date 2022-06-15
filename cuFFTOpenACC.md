@@ -144,8 +144,7 @@ On Saga:
 ```bash
 module load FFTW/3.3.9-intel-2021a
 ```
-On Betzy:
-The same can be loaded.
+The same module is available on Betzy.
 
 To compile: 
 ```bash
@@ -164,7 +163,7 @@ Similarly to the FFTW library, the implementation of the GPU-accelerated cuFFT l
 
 It is worth noting that the cuFFT library uses CUDA streams for an asynchronous execution, which is not the case for OpenACC. It is therefore necessary to make the cuFFT runs on OpenACC streams. This is done by calling the routine `cufftSetStream()`, which is part of the cuFFT module. The routine includes the function `acc_get_cuda_stream()`, which enables identifying the CUDA stream.
 
-Note that the use of the constructs `host_data` `use_device()` and the cuFFT routines requires including the header lines `use openacc` and `use cufft`.
+Note that the use of the OpenACC runtime routines and the cuFFT routines requires including the header lines `use openacc` and `use cufft`.
 
 The tables below summarize the calling functions in  the case of a multi-dimension data having a simple or double complex data type (see [here](https://docs.nvidia.com/hpc-sdk/compilers/fortran-cuda-interfaces/index.html) for more details).
 
@@ -283,18 +282,20 @@ The cuFFT library is part of the CUDA toolkit, and thus it is supported by the N
  
 Modules to be loaded:
 On Saga:
+```bash
 module load NVHPC/21.11 CUDA/11.4.1
-
+```
 On Betzy:
+```bash
 module load NVHPC/21.7 CUDA/11.4.1
+```
 
-To compile: it requires linking the cuFFT library (`-lcufft`) and adding the CUDA version library to the syntax of the compilation (`-cudalib=cufft`)
-We compile using the NVIDIA Fortran compiler nvfortran.
+We compile using the NVIDIA Fortran compiler nvfortran. The compilation process requires linking the cuFFT library (`-lcufft`) and adding the CUDA version library to the syntax of the compilation (`-cudalib=cufft`). 
 
 ```bash
 nvfortran -lcufft -cudalib=cufft -acc -Minfo=accel -o cufft.acc cufft_acc.f90
 ```
-Here the flag `-acc` enables OpenACC on NVIDIA-GPU. Here it is possible to specify the compute capability in Betzy, e.g. `-acc=cc80`
+Here the flag `-acc` enables OpenACC on NVIDIA-GPU. It is possible to specify the compute capability e.g. `-gpu=cc80` for Betzy and `-gpu=cc60` for Saga.
 
 To run:
 ```bash
@@ -307,5 +308,5 @@ For an NVIDIA GPU-based case, the linking should be provided for both cuFFT and 
 
 # Conclusion
 
-In conclusion, we have provided a description on the implementation of the FFTW library in a serial code and the GPU-accelerated cuFFT targeting NVIDIA in an OpenACC application. The latter implementation illustrates the capability of calling a GPU-accelerated library written in a low-level programming model from an OpenACC application interface. Although the implementation has been done for a 1D problem, an extension to 2D and 3D scenarios has been shown to be straightforward.   
+In conclusion, we have provided a description on the implementation of the FFTW library in a serial code and the GPU-accelerated cuFFT targeting NVIDIA in an OpenACC application. The latter implementation illustrates the capability of calling a GPU-accelerated library written in a low-level programming model from an OpenACC application interface. Although the implementation has been done for a 1D problem, an extension to 2D and 3D scenarios is straightforward.   
 
