@@ -1,4 +1,4 @@
-# GPU-accelerated library FFT
+# GPU-accelerated FFT library 
 
 # Summary
 
@@ -152,7 +152,7 @@ To execute:
 ./fftw.serial
 ```
 
-# Implementation of the cuFFT library  
+# Implementation of cuFFT 
 
 We consider the same scenario as described in the previous section but this time the implementation involves the communication between a CPU-host and GPU-device by calling the cuFFT library. The cuFFT implementation is shown below. 
 
