@@ -2,10 +2,11 @@
 
 # Summary
 
-In this documentation we provide an overview on how to implement a GPU-accelerated library FFT (Fast Fourier Transform) in an OpenACC application. Here we distinguish between two FFT libraries: cuFFT and cuFFTW. The cuFFT library is the NVIDIA-GPU based design, while cuFFTW is a porting version of the existing [FFTW](https://www.fftw.org/) library. In this tutorial, both libraries will be addressed with a special focus on the implementation of the cuFFT library. Specifically, the aim (focus) of this tutorial is to:
+In this documentation we provide an overview on how to implement a GPU-accelerated library FFT (Fast Fourier Transform) in an OpenACC application and the serial version of the FFTW library. Here we distinguish between two GPU-based FFT libraries: cuFFT and cuFFTW. The cuFFT library is the NVIDIA-GPU based design, while cuFFTW is a porting version of the existing [FFTW](https://www.fftw.org/) library. In this tutorial, both libraries will be addressed with a special focus on the implementation of the cuFFT library. Specifically, the aim of this tutorial is to:
+
 * Show how to incorporate the FFTW library in a serial code.
 * Describe how to use the cuFFTW library.
-* Show how to incorporate the cuFFT library in an OpenACC and OpenMP applications.
+* Show how to incorporate the cuFFT library in an OpenACC application interface.
 * Describe briefly how to enable cuFFT to run on OpenACC stream.
 * Describe the compilation process of FFTW and cuFFT.
 
@@ -32,11 +33,19 @@ In general, the implementation of an FFT library is based on three major steps a
 
 These steps necessitate specifying the direction, in which the FFT algorithm should be performed: forward or backward (or also inverse of FFT), and the dimension of the problem at hands as well as the precision (i.e. double or single precision); this is in addition to the nature of the data (real or complex) to be transformed.  
 
-In the following, we consider a one-dimensional (1D) scenario, in which the execution is specified for a double precision complex-to-complex transform plan in the forward and backward directions. The Fortran code can be adjusted to run calculations of a single precision as well as of real-to-real/complex transform and can be further extended to multi-dimension cases (i.e. 2D and 3D). We first start with the FFT implementation in a CPU-serial scheme and further extend it to a GPU-accelerated case.  The implementation is illustrated for a simple example of a function defined in time-domain. Here we choose a sinus function (i.e. f(t)=sin(&omega;t) with &omega; is fixed at the value 2), and its FFT should result in a peak around the value &omega;=2 in the frequency domain.  
+In the following, we consider a one-dimensional (1D) scenario, in which the execution is specified for a double precision complex-to-complex transform plan in the forward and backward directions. The implementation is illustrated via a Fortran code. The latter can be adjusted to run calculations of a single precision as well as of real-to-real/complex transform and can be further extended to multi-dimension cases (i.e. 2D and 3D). We first start with the FFT implementation in a serial-CPU scheme and further extend it to a GPU-accelerated case.  The implementation is illustrated for a simple example of a function defined in time-domain. Here we choose a sinus function (i.e. f(t)=sin(&omega;t) with &omega; is fixed at the value 2), and its FFT should result in a peak around the value &omega;=2 in the frequency domain.  
 
 # Implementation of FFTW   
 
 The implementation of the FFTW library is shown below and a detailed description of the library can be found [here](https://www.fftw.org/).
+
+As described in the code, one needs to initialize the FFT by creating plans. Executing the plans requires specifying the transform direction: *FFTWFORWARD* for the forward direction or *FFTWBACKWARD* for the backward direction (inverse FFT). These two parameters should be defined as an integer parameter. An alternative is to include the `fftw3.f` file as a header (i.e. `include "fftw3.f"`), which contains all parameters required for a general use of FFTW. In the case the file is included, the value of the direction parameter does not need to be defined.  
+
+The arguement *FFTW_MEASURE* in the function `dfftw_plan_dft_1d` means that FFTW measures the execution time of several FFTs in order to find the optimal way to compute the FFT, which might be time-consuming. An alternative is to use *FFTW_ESTIMATE*, which builds a reasonable plan without any computation. This procedure might be less optimal (see [here](https://www.fftw.org/) for further details). 
+
+Note that when implementing the FFTW library, the data obtained from the backward direction need to be normalized by dividing the output array by the size of the data, while those of forward direction do not. This is only valid when using the FFTW library.
+
+To check the outcome of the result in the forward direction, one can plot the function in the frequency-domain, which should display a peak around the value &w;=+2 and -2 as the function is initially symmetric. By performing the backward FFT of the obtained function, one should obtain the initial function displayed in time-domain (i.e. sin(2t)). This checking procedure holds also when implementing a GPU version of the FFT library.
 
 ``` fortran
       module parameter_kind
@@ -125,23 +134,18 @@ The implementation of the FFTW library is shown below and a detailed description
        end subroutine grid_1d
 ```
 
-As described above, one needs to initialize the FFT by creating plans, in which the.
-Executing the plans requires specifying the transform direction: FFTWFORWARD for the forward direction or FFTWBACKWARD for the backward direction (inverse FFT). These direction parameters should be defined as an integer parameter. An alternative is to include the fftw3.f file as a header (i.e. `include "fftw3.f"`), which contains all parameters required for a general use of FFTW. In the case the file is included, the value of the direction parameter does not need to be defined.  
-
-Note that when implementing the FFTW library, the data obtained from the backward direction need to be normalized by dividing the output array by the size of the data, while those of forward direction do not. This is only valid when using the FFTW library.
-
-To check the outcome of the result in the forward direction, one can plot the function in the frequency-domain, which should display a peak around the value &w;=+2 and -2 as the function is initially symmetric. By performing the backward FFT of the obtained function, one should obtain the initial function displayed in time-domain (i.e. sin(2t)). This checking procedure should hold also when implementing a GPU version of the FFT library.
-
 # Compilation process of FFTW
 
-For the serial case, the FFTW library should be linked with fftw3 (i.e. `-lfftw3`) for the double precision, and fftw3f (i.e. `-lfftw3f`) for the single precision case. 
+The FFTW library should be linked with fftw3 (i.e. `-lfftw3`) for the double precision, and fftw3f (i.e. `-lfftw3f`) for the single precision case. 
 
-Load an intel module: e.g. 
+Here is an example of a module to be loaded. 
 
 On Saga:
 ```bash
 module load FFTW/3.3.9-intel-2021a
 ```
+On Betzy:
+The same can be loaded.
 
 To compile: 
 ```bash
@@ -199,6 +203,7 @@ The tables below summarize the calling functions in  the case of a multi-dimensi
        print*,"--sum before FFT", sum(real(in(1:nt/2)))
 !cufftExecZ2Z executes a double precision complex-to-complex transform plan
        ierr = cufftPlan1D(plan,nt,CUFFT_Z2Z,1)
+       
 !acc_get_cuda_stream: tells the openACC runtime to dientify the CUDA
 !stream used by CUDA
        ierr = ierr + cufftSetStream(plan,acc_get_cuda_stream(acc_async_sync))
@@ -277,7 +282,12 @@ Single precision complex-to-complex transform plan | cufftExecC2C( plan, in, out
 The cuFFT library is part of the CUDA toolkit, and thus it is supported by the NVIDIA-GPU compiler. Therefore, the only modules are required to be load are NVHPC and CUDA modules.
  
 Modules to be loaded:
+On Saga:
+module load NVHPC/21.11 CUDA/11.4.1
+
 On Betzy:
+module load NVHPC/21.7 CUDA/11.4.1
+
 To compile: it requires linking the cuFFT library (`-lcufft`) and adding the CUDA version library to the syntax of the compilation (`-cudalib=cufft`)
 We compile using the NVIDIA Fortran compiler nvfortran.
 
