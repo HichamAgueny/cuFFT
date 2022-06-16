@@ -8,6 +8,6 @@ The code was tested for both NVIDIA A100 and P100.
 
 - FFTW: https://www.fftw.org/
 
-- cuFFT & cuFFTW: https://docs.nvidia.com/hpc-sdk/compilers/fortran-cuda-interfaces/
+- cuFFT & cuFFTW: https://docs.nvidia.com/cuda/cufft/index.html
 
 - OpenACC directives: https://www.nvidia.com/docs/IO/116711/OpenACC-API.pdf
