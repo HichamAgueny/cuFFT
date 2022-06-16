@@ -2,7 +2,7 @@
 
 # Summary
 
-In this documentation we provide an overview on how to implement a GPU-accelerated library FFT (Fast Fourier Transform) in an OpenACC application and the serial version of the FFTW library. Here we distinguish between two GPU-based FFT libraries: [cuFFT](https://docs.nvidia.com/cuda/cufft/index.html) and [cuFFTW](https://docs.nvidia.com/cuda/cufft/index.html). The cuFFT library is the NVIDIA-GPU based design, while cuFFTW is a porting version of the existing [FFTW](https://www.fftw.org/) library. In this tutorial, both libraries will be addressed with a special focus on the implementation of the cuFFT library. Specifically, the aim of this tutorial is to:
+In this documentation we provide an overview on how to implement a GPU-accelerated library FFT (Fast Fourier Transform) in an OpenACC application and the serial version of the FFTW library. Here we distinguish between two GPU-based FFT libraries: [cuFFT](https://docs.nvidia.com/cuda/cufft/index.html) and [cuFFTW](https://docs.nvidia.com/cuda/cufft/index.html#fftw-supported-interface). The cuFFT library is the NVIDIA-GPU based design, while cuFFTW is a porting version of the existing [FFTW](https://www.fftw.org/) library. In this tutorial, both libraries will be addressed with a special focus on the implementation of the cuFFT library. Specifically, the aim of this tutorial is to:
 
 * Show how to incorporate the FFTW library in a serial code.
 * Describe how to use the cuFFTW library.
@@ -46,6 +46,8 @@ The arguement *FFTW_MEASURE* in the function `dfftw_plan_dft_1d` means that FFTW
 Note that when implementing the FFTW library, the data obtained from the backward direction need to be normalized by dividing the output array by the size of the data, while those of forward direction do not. This is only valid when using the FFTW library.
 
 To check the outcome of the result in the forward direction, one can plot the function in the frequency-domain, which should display a peak around the value &w;=+2 and -2 as the function is initially symmetric. By performing the backward FFT of the obtained function, one should obtain the initial function displayed in time-domain (i.e. sin(2t)). This checking procedure holds also when implementing a GPU version of the FFT library.
+
+For completeness, porting the FFTW library to [cuFFTW](https://docs.nvidia.com/cuda/cufft/index.html#fftw-supported-interface) does not require modifications in the code - it is done by replacing the file `fftw3.h` with `cufftw.h`.
 
 ``` fortran
       module parameter_kind
@@ -153,6 +155,12 @@ ifort -lfftw3 -o fftw.serial fftw_serial.f90
 To execute: 
 ```bash
 ./fftw.serial
+```
+   
+In the case of using the cuFFTW library, the linking in the compilation syntaxt should be provided for both cuFFT and cuFFTW libraries (i.e. `-cudalib=cufft,cufftw`).
+
+```bash
+nvfortran -lcufftw -cudalib=cufft,cufftw -acc -Minfo=accel -o cufftw.acc cufftw_acc.f90
 ```
 
 # Implementation of cuFFT 
@@ -302,13 +310,6 @@ To run:
 srun --partition=accel --gpus=1 --time=00:01:00 --account=nnXXXXX --qos=devel --mem-per-cpu=1G ./cufft.acc
 ```
 
-For completeness, porting the FFTW library to cuFFTW is straightforward: it is done by replacing….   including `cufftw.h`
-   
-For an NVIDIA GPU-based case, the linking should be provided for both cuFFT and cuFFTW libraries (i.e. `-cudalib=cufft,cufftw`).
-
-```bash
-nvfortran -lcufftw -cudalib=cufft,cufftw -acc -Minfo=accel -o cufftw.acc cufftw_acc.f90
-```
 
 # Conclusion
 
