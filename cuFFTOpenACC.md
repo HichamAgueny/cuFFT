@@ -2,7 +2,7 @@
 
 # Summary
 
-In this documentation we provide an overview on how to implement a GPU-accelerated library FFT (Fast Fourier Transform) in an OpenACC application and the serial version of the FFTW library. Here we distinguish between two GPU-based FFT libraries: cuFFT and cuFFTW. The cuFFT library is the NVIDIA-GPU based design, while cuFFTW is a porting version of the existing [FFTW](https://www.fftw.org/) library. In this tutorial, both libraries will be addressed with a special focus on the implementation of the cuFFT library. Specifically, the aim of this tutorial is to:
+In this documentation we provide an overview on how to implement a GPU-accelerated library FFT (Fast Fourier Transform) in an OpenACC application and the serial version of the FFTW library. Here we distinguish between two GPU-based FFT libraries: [cuFFT](https://docs.nvidia.com/cuda/cufft/index.html) and [cuFFTW](https://docs.nvidia.com/cuda/cufft/index.html). The cuFFT library is the NVIDIA-GPU based design, while cuFFTW is a porting version of the existing [FFTW](https://www.fftw.org/) library. In this tutorial, both libraries will be addressed with a special focus on the implementation of the cuFFT library. Specifically, the aim of this tutorial is to:
 
 * Show how to incorporate the FFTW library in a serial code.
 * Describe how to use the cuFFTW library.
@@ -302,9 +302,13 @@ To run:
 srun --partition=accel --gpus=1 --time=00:01:00 --account=nnXXXXX --qos=devel --mem-per-cpu=1G ./cufft.acc
 ```
 
-For completeness, porting the FFTW library to cuFFTW is straightforward: it is done by replacing….  
+For completeness, porting the FFTW library to cuFFTW is straightforward: it is done by replacing….   including `cufftw.h`
    
-For an NVIDIA GPU-based case, the linking should be provided for both cuFFT and cuFFTW libraries (i.e. `-cudalib=cufft`).
+For an NVIDIA GPU-based case, the linking should be provided for both cuFFT and cuFFTW libraries (i.e. `-cudalib=cufft,cufftw`).
+
+```bash
+nvfortran -lcufftw -cudalib=cufft,cufftw -acc -Minfo=accel -o cufftw.acc cufftw_acc.f90
+```
 
 # Conclusion
 
