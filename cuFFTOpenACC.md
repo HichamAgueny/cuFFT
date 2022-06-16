@@ -157,11 +157,8 @@ To execute:
 ./fftw.serial
 ```
    
-In the case of using the cuFFTW library, the linking in the compilation syntaxt should be provided for both cuFFT and cuFFTW libraries (i.e. `-cudalib=cufft,cufftw`).
+In the case of using the cuFFTW library, the linking in the compilation syntaxt should be provided for both cuFFT and cuFFTW libraries.
 
-```bash
-nvfortran -lcufftw -cudalib=cufft,cufftw -acc -Minfo=accel -o cufftw.acc cufftw_acc.f90
-```
 
 # Implementation of cuFFT 
 
