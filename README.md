@@ -2,7 +2,7 @@
 
 This documentation is about implementing a GPU-accelerated FFT (Fast Fourier Transform) library in an OpenACC application interface, and also the FFTW library in a serial scenario. A Fortran code illustrating the implementation is provided. Details about the compilation process is described in the documentation.
 
-The code was tested for both NVIDIA A100 and P100.
+The code was tested on both NVIDIA A100 and P100.
 
 # References
 
