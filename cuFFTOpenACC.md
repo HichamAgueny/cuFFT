@@ -1,8 +1,8 @@
-# GPU-accelerated FFT library 
+# GPU-accelerated FFT library: Tutorial 
 
 # Summary
 
-In this documentation we provide an overview on how to implement a GPU-accelerated library FFT (Fast Fourier Transform) in an OpenACC application and the serial version of the FFTW library. Here we distinguish between two GPU-based FFT libraries: [cuFFT](https://docs.nvidia.com/cuda/cufft/index.html) and [cuFFTW](https://docs.nvidia.com/cuda/cufft/index.html#fftw-supported-interface). The cuFFT library is the NVIDIA-GPU based design, while cuFFTW is a porting version of the existing [FFTW](https://www.fftw.org/) library. In this tutorial, both libraries will be addressed with a special focus on the implementation of the cuFFT library. Specifically, the aim of this tutorial is to:
+In this tutorial we provide an overview on how to implement a GPU-accelerated library FFT (Fast Fourier Transform) in an OpenACC application and the serial version of the FFTW library. Here we distinguish between two GPU-based FFT libraries: [cuFFT](https://docs.nvidia.com/cuda/cufft/index.html) and [cuFFTW](https://docs.nvidia.com/cuda/cufft/index.html#fftw-supported-interface). The cuFFT library is the NVIDIA-GPU based design, while cuFFTW is a porting version of the existing [FFTW](https://www.fftw.org/) library. In this tutorial, both libraries will be addressed with a special focus on the implementation of the cuFFT library. Specifically, the aim of this tutorial is to:
 
 * Show how to incorporate the FFTW library in a serial code.
 * Describe how to use the cuFFTW library.
